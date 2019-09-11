@@ -1,6 +1,6 @@
 # cloud-run-jason-parser
 
-Simple [Cloud Run](https://cloud.google.com/run/) service that parses posted JSON using provided select parameters and returns selected results.
+Simple [Cloud Run](https://cloud.google.com/run/) service that parses posted JSON using provided select query and returns matching results.
 
 The currently implemented services are:
 
