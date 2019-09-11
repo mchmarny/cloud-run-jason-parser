@@ -6,28 +6,25 @@ import (
 	"net"
 	"net/http"
 	"os"
+
+	ev "github.com/mchmarny/gcputil/env"
+)
+
+var (
+	logger = log.New(os.Stdout, "", 0)
+	port   = ev.MustGetEnvVar("PORT", "8080")
 )
 
 func main() {
-
-	log.Print("Hello service started")
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Print("Hello service invoked")
-		message := os.Getenv("MESSAGE")
-		fmt.Fprintf(w, "%s\n", message)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/select", selectHandler)
+	mux.HandleFunc("/find", findHandler)
+	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "ok")
 	})
 
-	// Set HTTP listening port
-	// https://cloud.google.com/run/docs/reference/container-contract#port
-	httpPort := os.Getenv("PORT")
-	if httpPort == "" {
-		httpPort = "8080"
-	}
-
-	hostPost := net.JoinHostPort("0.0.0.0", httpPort)
-
-	if err := http.ListenAndServe(hostPost, nil); err != nil {
-		log.Fatal(err)
-	}
+	hostPort := net.JoinHostPort("0.0.0.0", port)
+	server := &http.Server{Addr: hostPort, Handler: mux}
+	logger.Printf("Server starting: %s \n", hostPort)
+	logger.Fatal(server.ListenAndServe())
 }

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# GCP project name
+PROJECT=$(gcloud config get-value project)
+
+gcloud iam service-accounts create json-selector-sa \
+	--display-name "JSON Selector Service Service Account"
+
+gcloud projects add-iam-policy-binding $PROJECT \
+	--member serviceAccount:json-selector-sa@${PROJECT}.iam.gserviceaccount.com \
+	--role roles/logging.logWriter
+
+gcloud projects add-iam-policy-binding $PROJECT \
+	--member serviceAccount:json-selector-sa@${PROJECT}.iam.gserviceaccount.com \
+	--role roles/cloudtrace.agent

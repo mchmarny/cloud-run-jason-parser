@@ -3,9 +3,9 @@
 # GCP project name
 PROJECT=$(gcloud config get-value project)
 
-gcloud beta run services delete gorunstarter \
+gcloud beta run services delete json-selector \
     --platform managed \
     --region us-central1
 
 gcloud iam service-accounts delete \
-    gorunstarter-sa@${PROJECT}.iam.gserviceaccount.com
+    json-selector-sa@${PROJECT}.iam.gserviceaccount.com

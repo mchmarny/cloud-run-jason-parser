@@ -1,0 +1,11 @@
+#!/bin/bash
+
+SERVICE_URL=$(gcloud beta run services describe json-selector \
+    --region us-central1 \
+    --format="value(status.domain)")
+
+curl -X POST \
+     -H "Select-query: login" \
+     -H "Content-Type: application/json" \
+     -d "@sample/github-repo-contributors.json" \
+     "${SERVICE_URL}/select"

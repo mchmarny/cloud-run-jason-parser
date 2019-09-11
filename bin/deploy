@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# GCP project name
+PROJECT=$(gcloud config get-value project)
+
+gcloud beta run deploy json-selector \
+	--allow-unauthenticated \
+	--image gcr.io/$PROJECT/json-selector:0.0.1 \
+	--platform managed \
+	--region us-central1 \
+	--service-account json-selector-sa@${PROJECT}.iam.gserviceaccount.com
+

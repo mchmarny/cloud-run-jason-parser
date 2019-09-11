@@ -1,40 +1,70 @@
-# gorunstarter
+# cloud-run-jason-parser
 
-Simple [Cloud Run](https://cloud.google.com/run/) starter project for `go` meant to be used as a GitHub repository template to speed up new Cloud Run service development by removing the need to re-create the common "boilerplate" code and simplifying common steps.
+Simple [Cloud Run](https://cloud.google.com/run/) service that parses posted JSON using provided select parameters and returns selected results.
 
-## Audience
+The currently implemented services are:
 
-For developers wanting to quickly start their `go` service development on [Cloud Run](https://cloud.google.com/run/) from a well-structured template with minimal amount of external dependencies.
+* `POST /find` - Returns all matching elements anywhere in the posted content based on provided select query
+* `POST /select` - Selects specific element from the posted content based on a fully-qualified query
 
-> This is not an official or standard Cloud Run project layout, just a set of common initial bits that are helpful to me.
+## Example
 
-## Usage
-
-To use this template when creating a new Cloud Run service, just click on the "use this template" button and follow the prompts.
-
-![](https://help.github.com/assets/images/help/repository/use-this-template-button.png)
-
-Your newly created project based on the `gorunstarter` template will also include the three basic steps of Cloud Run developer workflow. You can click on the below links to see the content of these commands.
-
-> For complete walk-through build and deploy see the [Cloud Run Quickstart](https://cloud.google.com/run/docs/quickstarts/build-and-deploy)
-
-[Building a container image](bin/build-container-image) which submits job to Cloud Build using the included [Dockerfile](./Dockerfile) and results in versioned, non-root container image URI which will be used to deploy your service to Cloud Run.
+You can invoke the service using HTTP to select on specific element of that JSON
 
 ```shell
-bin/build-container-image
+curl -X POST \
+     -H "Select-query: contributions" \
+     -H "Content-Type: application/json" \
+     -d '{"login": "test","id": 123456,"type": "User","contributions": 551}' \
+     https://json-selector-2gtouos2pq-uc.a.run.app/select
 ```
 
-[Creating a service account](bin/create-service-account) which configures least privilege IAM service account which identity the deployed Cloud Run service will run under.
+The resulting JSON response from the service would be `551`.
+
+## Build the image
+
+Start by [building a container image](bin/image) by submitting job to Cloud Build using the included [Dockerfile](./Dockerfile) and results in versioned, non-root container image URI which will be used to deploy your service to Cloud Run.
 
 ```shell
-bin/create-service-account
+bin/image
 ```
 
-[Deploying Cloud Run service](bin/deploy-cloud-run-service) which deploys public (i.e. unauthenticated) Cloud Run service configured with environment variable and service account identity using the previously built container image.
+## Create IAM account
+
+It's a good practice to run Cloud Run service under a specific IAM account. [Create a service account](bin/account) to configure least privilege IAM service account who's identity the deployed Cloud Run service will run under.
 
 ```shell
-bin/deploy-cloud-run-service
+bin/account
 ```
+
+## Deploy Service
+
+Finally [deploy public Cloud Run service](bin/deploy) configured with the previously configured service account identity container image.
+
+```shell
+bin/deploy
+```
+
+## Test
+
+You can use one of the provided sample files to test your newly deployed service. Start by first capturing the Cloud Run URL
+
+```shell
+export SERVICE_URL=$(gcloud beta run services describe json-selector \
+    --region us-central1 \
+    --format="value(status.domain)")
+```
+
+Now you can CURL on that service with the provided sample file which is a result of the GitHub public API query on the [Knative Serving repository](https://github.com/knative/serving) contributors
+
+```shell
+curl -X POST \
+     -H "Select-query: login" \
+     -H "Content-Type: application/json" \
+     -d "@sample/github-repo-contributors.json" \
+     "${SERVICE_URL}/find"
+```
+The result should be `test`.
 
 ## Cleanup
 
