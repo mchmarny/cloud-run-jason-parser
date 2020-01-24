@@ -52,7 +52,7 @@ You can use one of the provided sample files to test your newly deployed service
 ```shell
 export SERVICE_URL=$(gcloud beta run services describe json-selector \
     --region us-central1 \
-    --format="value(status.domain)")
+    --format="value(status.url)")
 ```
 
 Now you can CURL on that service with the provided sample file which is a result of the GitHub public API query on the [Knative Serving repository](https://github.com/knative/serving) contributors
